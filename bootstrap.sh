@@ -96,6 +96,16 @@ if curl -fsSL "$REPO_RAW/CLAUDE.md.template" -o /tmp/CLAUDE.md.template 2>/dev/n
   rm -f /tmp/CLAUDE.md.template
 fi
 
+# Align Tailscale hostname with the OS hostname (no-op if Tailscale not yet up).
+TS=/usr/local/bin/tailscale
+[ -x "$TS" ] || TS=/opt/homebrew/bin/tailscale
+if [ -x "$TS" ] && "$TS" status >/dev/null 2>&1; then
+  banner "Aligning Tailscale hostname with $HOSTNAME"
+  sudo "$TS" set --hostname="$HOSTNAME" 2>/dev/null || \
+    "$TS" set --hostname="$HOSTNAME" 2>/dev/null || \
+    echo "  (skip — could not set; rename manually in Tailscale admin console if needed)"
+fi
+
 cat <<DONE
 
 ============================================================
