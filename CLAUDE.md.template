@@ -1,0 +1,59 @@
+# Unlok — Helper Server Workspace (`__HOSTNAME__`)
+
+This is the working directory for `__HOSTNAME__`, helper #__N__ in the Unlok fleet. Read this first.
+
+## Where am I?
+
+This machine: **`__HOSTNAME__`** (user `__USER__`, Mac mini)
+
+Tailscale tailnet: `corp@`. Use Tailscale MagicDNS hostnames, never LAN IPs.
+
+## The fleet
+
+| Role | Hostname | User |
+|---|---|---|
+| Driver | `unlok-workstation` | `asm002` |
+| Helper #1 | `unlok-server-1` | `mini3` |
+| Helper #2 | `unlok-server-2` | `server-2` |
+| Helper #3 | `unlok-server-3` | `server-3` |
+| Helper #4 | `unlok-server-4` | `server-4` |
+
+## Connectivity
+
+- Workstation → this server: keyed.
+- This server → workstation: keyed (added during bootstrap).
+- Power: always-on (sleep=0, womp=1, autorestart=1).
+- Firewall: off (mosh UDP 60000-61000 open).
+
+## What runs here
+
+- **Claude Code CLI** (`claude` on PATH) — for headless invocations.
+- **Claude Desktop** — only if installed manually post-bootstrap.
+
+## Tools
+
+- `tmux` (`~/.tmux.conf`: mouse, 50k scrollback, vi keys) — wrap long agent runs in `tmux new -s <name>`.
+- `mosh` — for flaky-network SSH from the workstation.
+- `tailscale` — App Store build, sandboxed (no Tailscale SSH; we use plain SSH).
+- Homebrew, Node, npm.
+
+## Shell init
+
+- `~/.zshenv` — loaded by ALL shells. Has brew + tool PATH.
+- `~/.zprofile` — login shells only.
+- `~/.zshrc` — interactive shells only.
+
+## Workspace layout
+
+```
+~/Documents/Claude/Unlok/   <- you are here
+~/agents/workspace/         <- where tasks run
+~/agents/logs/              <- output logs
+~/agents/scratch/           <- temp files
+```
+
+## Conventions
+
+- Long-running agent work: `tmux new -s agent-<topic>` then detach.
+- Logs: `~/agents/logs/YYYY-MM-DD-HH-<task>.log`.
+- Repo: https://github.com/ASM-TECH-MIAMI/unlok-fleet (bootstrap, scripts, fleet management).
