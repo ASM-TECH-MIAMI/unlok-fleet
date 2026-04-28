@@ -36,10 +36,14 @@ sudo scutil --set LocalHostName "$HOSTNAME"
 sudo scutil --set HostName "$HOSTNAME"
 
 banner "Power settings: never sleep, wake on LAN, restart on power loss"
-sudo pmset -a sleep 0 displaysleep 0 womp 1 autorestart 1 powernap 1
+sudo pmset -a sleep 0 displaysleep 0 disksleep 0 womp 1 autorestart 1 powernap 1
 
 banner "Disabling firewall (so mosh UDP 60000-61000 works)"
 sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off >/dev/null
+
+banner "Disabling auto-install of macOS updates (prevents surprise reboots that kill agents)"
+sudo defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticallyInstallMacOSUpdates -bool false
+sudo defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticDownload -bool true
 
 if ! command -v brew >/dev/null 2>&1; then
   banner "Installing Homebrew"
@@ -111,11 +115,25 @@ cat <<DONE
 ============================================================
 DONE. $HOSTNAME is configured.
 
-NEXT STEPS:
+REMAINING STEPS (cannot be automated — macOS blocks them from CLI):
 
-1. (optional) Install Claude Desktop GUI from https://claude.ai/download
+1. Enable Remote Login (so the workstation can SSH in):
+   System Settings -> General -> Sharing -> Remote Login -> ON
+   "Allow access for" -> Only these users -> add $USER_NAME
+   (CLI 'systemsetup -setremotelogin on' requires Full Disk Access.)
 
-2. On unlok-workstation, register this helper. Run there:
+2. Enable auto-login (so the mini comes back unattended after a reboot):
+   System Settings -> Users & Groups -> "Automatically log in as" -> $USER_NAME
+
+3. Activate Claude Code on this helper (one-time, interactive):
+   Run 'claude' in this terminal and complete the login flow.
+   Either:
+     a) Sign in with your claude.ai subscription (Pro/Max), OR
+     b) Paste an Anthropic API key from console.anthropic.com.
+
+4. (Optional) Install Claude Desktop GUI from https://claude.ai/download
+
+5. On unlok-workstation, register this helper. Run there:
 
    curl -fsSL $REPO_RAW/add-helper.sh | bash -s -- $N "$(cat ~/.ssh/id_ed25519.pub)"
 
@@ -123,7 +141,7 @@ NEXT STEPS:
 
 $(cat ~/.ssh/id_ed25519.pub)
 
-3. From the workstation, test it:
+6. From the workstation, test it:
 
    ssh $HOSTNAME 'hostname && claude --version'
 
